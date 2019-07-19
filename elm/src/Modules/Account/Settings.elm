@@ -11,7 +11,8 @@ import Element.Input as Input
 import Form exposing (Form)
 import Form.View
 import Http
-import I18n
+import I18n exposing (Language(..))
+import Modules.Account.Common exposing(Context, UiElement, toContext, tt)
 import LocalStorage exposing (Event(..), jwtAuthenticationTokenKey)
 import Modules.Account.I18n.Phrases as AccountPhrases
 import Modules.Account.I18n.Translator exposing (translator)
@@ -19,6 +20,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Routes exposing (Route(..), routeToUrlString)
 import SharedState exposing (SharedState, SharedStateUpdate(..), getUsername)
 import Toasty.Defaults
+import UiFramework exposing (WithContext, UiContextual, toElement, fromElement, uiText, uiRow, uiColumn, uiParagraph, flatMap)
 import UiFramework.Form
 import UiFramework.Padding
 import UiFramework.Typography exposing (h1)
@@ -117,19 +119,13 @@ update sharedState msg model =
 view : SharedState -> Model -> ( String, Element Msg )
 view sharedState model =
     ( "Settings"
-    , el
-        [ height fill, width fill, paddingXY 10 10 ]
-        (content sharedState model)
+    , toElement (toContext sharedState) (content (SharedState.getUsername sharedState) model)
     )
 
 
-content : SharedState -> Model -> Element Msg
-content sharedState model =
-    let
-        translate =
-            translator sharedState.language
-    in
-    column
+content : String -> Model -> UiElement Msg
+content username model =
+    uiColumn
         [ width fill
         , height fill
         , alignLeft
@@ -137,24 +133,27 @@ content sharedState model =
         , spacing 20
         ]
         [ h1 [ paddingXY 0 30 ]
-            (text <| translate <| AccountPhrases.SettingsTitle (SharedState.getUsername sharedState))
-        , UiFramework.Form.layout
-            { onChange = FormChanged
-            , action = translate AccountPhrases.SaveButtonLabel
-            , loading = translate AccountPhrases.SaveButtonLoading
-            , validation = Form.View.ValidateOnSubmit
-            }
-            (form sharedState)
-            model
+            <| tt <| AccountPhrases.SettingsTitle username
+        , flatMap
+            (\context ->
+                UiFramework.Form.layout
+                    { onChange = FormChanged
+                    , action = context.translate AccountPhrases.SaveButtonLabel
+                    , loading = context.translate AccountPhrases.SaveButtonLoading
+                    , validation = Form.View.ValidateOnSubmit
+                    }
+                    (form context.language)
+                    model
+            )
         ]
-        |> UiFramework.Padding.responsive sharedState
+        |> UiFramework.Padding.responsive
 
 
-form : SharedState -> Form Values Msg
-form sharedState =
+form : Language -> Form Values Msg
+form language =
     let
         translate =
-            translator sharedState.language
+            translator language
 
         firstNameField =
             Form.textField

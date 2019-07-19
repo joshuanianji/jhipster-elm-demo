@@ -10,12 +10,14 @@ import Element.Input as Input
 import Form exposing (Form)
 import Form.View
 import Http
+import Modules.Account.Common exposing(Context, UiElement, toContext, tt)
 import Modules.Account.I18n.Phrases as AccountPhrases
 import Modules.Account.I18n.Translator exposing (translator)
 import RemoteData
 import Routes exposing (Route(..), routeToUrlString)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
 import Toasty.Defaults
+import UiFramework exposing (WithContext, UiContextual, toElement, fromElement, uiText, uiRow, uiColumn, uiParagraph, flatMap)
 import UiFramework.Alert as Alert
 import UiFramework.Form
 import UiFramework.Padding
@@ -103,18 +105,12 @@ update sharedState msg model =
 view : SharedState -> Model -> ( String, Element Msg )
 view sharedState model =
     ( "Activation"
-    , el
-        [ width fill, height fill, centerX, paddingXY 100 10 ]
-        (content sharedState model)
+    , toElement (toContext sharedState) (content model)
     )
 
 
-content sharedState model =
-    let
-        translate =
-            translator sharedState.language
-    in
-    column
+content model =
+    uiColumn
         [ width fill
         , height fill
         , alignLeft
@@ -122,36 +118,34 @@ content sharedState model =
         , spacing 20
         ]
         [ h1 [ paddingXY 0 30 ]
-            (text <| translate AccountPhrases.ActivateTitle)
+            <| tt AccountPhrases.ActivateTitle
         , case model.activateState of
             NoKey ->
                 Alert.simple Warning <|
-                    text <|
-                        translate AccountPhrases.MissingActivationKey
+                    tt AccountPhrases.MissingActivationKey
 
             Activating ->
                 Alert.simple Primary <|
-                    text <|
-                        translate AccountPhrases.Activating
+                    tt AccountPhrases.Activating
 
             Succeeded ->
                 Alert.simple Success <|
-                    paragraph []
-                        [ text <| translate AccountPhrases.UserAccountActivated
-                        , Alert.link Success
+                    uiParagraph []
+                        [ tt AccountPhrases.UserAccountActivated
+                        , Alert.link
                             { onPress = Just <| NavigateTo Login
-                            , label = text <| translate AccountPhrases.CanLoginNow
+                            , label = tt AccountPhrases.CanLoginNow
                             }
                         ]
 
             Failed err ->
                 Alert.simple Danger <|
-                    paragraph []
-                        [ text err
-                        , Alert.link Danger
+                    uiParagraph []
+                        [ uiText (\_ -> err)
+                        , Alert.link
                             { onPress = Just <| NavigateTo Register
-                            , label = text <| translate AccountPhrases.UseRegistrationToSignup
+                            , label = tt AccountPhrases.UseRegistrationToSignup
                             }
                         ]
         ]
-        |> UiFramework.Padding.responsive sharedState
+        |> UiFramework.Padding.responsive

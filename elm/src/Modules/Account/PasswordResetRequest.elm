@@ -10,12 +10,15 @@ import Element.Input as Input
 import Form exposing (Form)
 import Form.View
 import Http
+import I18n exposing (Language(..))
+import Modules.Account.Common exposing (Context, UiElement, toContext, tt)
 import Modules.Account.I18n.Phrases as AccountPhrases
 import Modules.Account.I18n.Translator exposing (translator)
 import RemoteData exposing (RemoteData(..), WebData)
 import Routes exposing (Route(..), routeToUrlString)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
 import Toasty.Defaults
+import UiFramework exposing (UiContextual, WithContext, flatMap, fromElement, toElement, uiColumn, uiParagraph, uiRow, uiText)
 import UiFramework.Alert as Alert
 import UiFramework.Form
 import UiFramework.Padding
@@ -107,23 +110,13 @@ update sharedState msg model =
 view : SharedState -> Model -> ( String, Element Msg )
 view sharedState model =
     ( "Reset"
-    , el
-        [ width fill
-        , height fill
-        , centerX
-        , paddingXY 100 10
-        ]
-        (content sharedState model)
+    , toElement (toContext sharedState) (content model)
     )
 
 
-content : SharedState -> Model -> Element Msg
-content sharedState model =
-    let
-        translate =
-            translator sharedState.language
-    in
-    column
+content : Model -> UiElement Msg
+content model =
+    uiColumn
         [ width fill
         , height fill
         , paddingXY 20 10
@@ -132,27 +125,30 @@ content sharedState model =
         ]
         [ h1
             [ paddingXY 0 30 ]
-            (text <| translate AccountPhrases.ResetPasswordTitle)
+          <|
+            tt AccountPhrases.ResetPasswordTitle
         , Alert.simple Warning <|
-            text <|
-                translate AccountPhrases.ResetPasswordInfo
-        , UiFramework.Form.layout
-            { onChange = FormChanged
-            , action = translate AccountPhrases.ResetButtonLabel
-            , loading = translate AccountPhrases.ResetButtonLoading
-            , validation = Form.View.ValidateOnSubmit
-            }
-            (form sharedState)
-            model
+            tt AccountPhrases.ResetPasswordInfo
+        , flatMap
+            (\context ->
+                UiFramework.Form.layout
+                    { onChange = FormChanged
+                    , action = context.translate AccountPhrases.ResetButtonLabel
+                    , loading = context.translate AccountPhrases.ResetButtonLoading
+                    , validation = Form.View.ValidateOnSubmit
+                    }
+                    (form context.language)
+                    model
+            )
         ]
-        |> UiFramework.Padding.responsive sharedState
+        |> UiFramework.Padding.responsive
 
 
-form : SharedState -> Form Values Msg
-form sharedState =
+form : Language -> Form Values Msg
+form language =
     let
         translate =
-            translator sharedState.language
+            translator language
 
         emailField =
             Form.textField

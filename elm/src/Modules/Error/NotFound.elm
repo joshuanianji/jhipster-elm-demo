@@ -1,24 +1,27 @@
-module Modules.Error.NotFound exposing (..)
+module Modules.Error.NotFound exposing (Model, Msg(..), content, init, subscriptions, update, view)
 
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import Modules.Error.Common exposing (Context, UiElement, toContext, tt)
 import Modules.Error.I18n.Phrases as ErrorPhrases
-import Modules.Error.I18n.Translator exposing(translator)
+import Modules.Error.I18n.Translator exposing (translator)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
-import UiFramework.Typography exposing(h1)
+import UiFramework exposing (UiContextual, WithContext, flatMap, fromElement, toElement, uiColumn, uiParagraph, uiRow, uiText)
+import UiFramework.Typography exposing (h1)
 
 
-type alias Model = {}
+type alias Model =
+    {}
 
 
-type Msg 
+type Msg
     = NoOp
 
 
 init : ( Model, Cmd Msg )
-init = 
+init =
     ( {}, Cmd.none )
 
 
@@ -36,12 +39,17 @@ view sharedState model =
             translator sharedState.language
     in
     ( " 404 Not Found"
-    , el 
-        [ height fill, centerX, paddingXY 10 10, Font.center ]
-        ( h1 [] <| text <| translate ErrorPhrases.NotFoundTitle )
+    , toElement (toContext sharedState) content
     )
 
 
-subscriptions : Model -> Sub Msg 
+content =
+    uiColumn
+        [ height fill, centerX, paddingXY 10 10, Font.center ]
+        [ h1 [] <| tt ErrorPhrases.NotFoundTitle
+        ]
+
+
+subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none

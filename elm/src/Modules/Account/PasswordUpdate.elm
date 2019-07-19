@@ -10,12 +10,15 @@ import Element.Input as Input
 import Form exposing (Form)
 import Form.View
 import Http
+import I18n exposing (Language(..))
+import Modules.Account.Common exposing(Context, UiElement, toContext, tt)
 import Modules.Account.I18n.Phrases as AccountPhrases
 import Modules.Account.I18n.Translator exposing (translator)
 import RemoteData exposing (RemoteData(..), WebData)
 import Routes exposing (Route(..), routeToUrlString)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
 import Toasty.Defaults
+import UiFramework exposing (WithContext, UiContextual, toElement, fromElement, uiText, uiRow, uiColumn, uiParagraph, flatMap)
 import UiFramework.Form
 import UiFramework.Padding
 import UiFramework.Password
@@ -114,19 +117,13 @@ update sharedState msg model =
 view : SharedState -> Model -> ( String, Element Msg )
 view sharedState model =
     ( "Change Password"
-    , el
-        [ height fill, width fill, paddingXY 10 10 ]
-        (content sharedState model)
+    , toElement (toContext sharedState) (content (SharedState.getUsername sharedState) model)
     )
 
 
-content : SharedState -> Model -> Element Msg
-content sharedState model =
-    let
-        translate =
-            translator sharedState.language
-    in
-    column
+content : String -> Model -> UiElement Msg
+content username model =
+    uiColumn
         [ width fill
         , height fill
         , paddingXY 20 10
@@ -134,24 +131,27 @@ content sharedState model =
         , Font.alignLeft
         ]
         [ h1 [ paddingXY 0 30 ]
-            (text <| translate <| AccountPhrases.UpdatePasswordTitle (SharedState.getUsername sharedState))
-        , UiFramework.Form.layout
-            { onChange = FormChanged
-            , action = translate AccountPhrases.SaveButtonLabel
-            , loading = translate AccountPhrases.SaveButtonLoading
-            , validation = Form.View.ValidateOnSubmit
-            }
-            (form sharedState)
-            model
+            <| tt <| AccountPhrases.UpdatePasswordTitle username
+        , flatMap
+            (\context ->
+                UiFramework.Form.layout
+                    { onChange = FormChanged
+                    , action = context.translate AccountPhrases.SaveButtonLabel
+                    , loading = context.translate AccountPhrases.SaveButtonLoading
+                    , validation = Form.View.ValidateOnSubmit
+                    }
+                    (form context.language)
+                    model
+            )
         ]
-        |> UiFramework.Padding.responsive sharedState
+        |> UiFramework.Padding.responsive
 
 
-form : SharedState -> Form Values Msg
-form sharedState =
+form : Language -> Form Values Msg
+form language =
     let
         translate =
-            translator sharedState.language
+            translator language
 
         currentPasswordField =
             Form.passwordField

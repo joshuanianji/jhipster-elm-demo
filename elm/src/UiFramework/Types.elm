@@ -17,3 +17,22 @@ type ScreenSize
     | MD
     | LG
     | XL
+
+
+getFontSize : ScreenSize -> Int
+getFontSize size =
+    case size of
+        XS ->
+            12
+        
+        SM ->
+            14
+
+        MD ->
+            16
+
+        LG ->
+            20
+
+        XL ->
+            24

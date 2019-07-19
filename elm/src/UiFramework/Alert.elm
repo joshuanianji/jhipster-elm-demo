@@ -19,61 +19,65 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Region as Region
 import UiFramework.Colors exposing (..)
-import UiFramework.Types exposing (Role(..), ScreenSize(..))
+import UiFramework.Internal as Internal
+import UiFramework.Types exposing (Role(..), ScreenSize(..), getFontSize)
+
+type alias UiElement context msg =
+    Internal.WithContext (Internal.UiContextual context) msg
 
 
-type Alert msg
-    = Alert (Options msg)
+type Alert context msg
+    = Alert (Options context msg)
 
 
-type alias Options msg =
+type alias Options context msg =
     { role : Role
     , size : ScreenSize
     , attributes : List (Attribute msg)
-    , child : Element msg
+    , child : UiElement context msg
     }
 
 
-withRole : Role -> Alert msg -> Alert msg
+withRole : Role -> Alert context msg -> Alert context msg
 withRole role (Alert options) =
     Alert { options | role = role }
 
 
-withLarge : Alert msg -> Alert msg
+withLarge : Alert context msg -> Alert context msg
 withLarge (Alert options) =
     Alert { options | size = LG }
 
 
-withSmall : Alert msg -> Alert msg
+withSmall : Alert context msg -> Alert context msg
 withSmall (Alert options) =
     Alert { options | size = SM }
 
 
-withExtraAttrs : List (Attribute msg) -> Alert msg -> Alert msg
+withExtraAttrs : List (Attribute msg) -> Alert context msg -> Alert context msg
 withExtraAttrs attributes (Alert options) =
     Alert { options | attributes = attributes }
 
 
-withChild : Element msg -> Alert msg -> Alert msg
+withChild : UiElement context msg -> Alert context msg -> Alert context msg
 withChild child (Alert options) =
     Alert { options | child = child }
 
 
-defaultOptions : Options msg
+defaultOptions : Options context msg
 defaultOptions =
     { role = Primary
     , size = MD
     , attributes = []
-    , child = none
+    , child = Internal.fromElement (\context -> none)
     }
 
 
-default : Alert msg
+default : Alert context msg
 default =
     Alert defaultOptions
 
 
-simple : Role -> Element msg -> Element msg
+simple : Role -> UiElement context msg -> UiElement context msg
 simple role child =
     default
         |> withRole role
@@ -81,50 +85,33 @@ simple role child =
         |> view
 
 
-link :
-    Role
-    ->
-        { onPress : Maybe msg
-        , label : Element msg
-        }
-    -> Element msg
-link role { onPress, label } =
-    let
-        fontColor =
-            defaultAlertLinkFontColor role
-    in
-    Input.button
-        [ Font.bold, Font.color fontColor ]
-        { onPress = onPress
-        , label = label
-        }
-
-
-
 -- Rendering Alert
 
 
-view : Alert msg -> Element msg
+view : Alert context msg -> UiElement context msg
 view (Alert options) =
-    el
-        (viewAttributes options)
-        options.child
+    Internal.fromElement
+        (\context ->
+            el (viewAttributes context options) <|
+                Internal.toElement
+                    { context | parentRole = Just options.role } options.child
+        )
 
 
-viewAttributes : Options mag -> List (Attribute msg)
-viewAttributes options =
+viewAttributes : (Internal.UiContextual context) -> Options context mag -> List (Attribute msg)
+viewAttributes context options =
     let
         backgroundColor =
-            defaultAlertBackgroundColor options.role
+            alertBackgroundColor context.themeColor options.role
 
         borderColor =
-            defaultAlertBorderColor options.role
+            alertBorderColor context.themeColor options.role
 
         fontColor =
-            defaultAlertFontColor options.role
+            alertFontColor context.themeColor options.role
 
         fontSize =
-            16
+            getFontSize options.size
     in
     [ width fill
     , paddingXY 20 16
@@ -137,3 +124,26 @@ viewAttributes options =
     , Border.color borderColor
     , Background.color backgroundColor
     ]
+
+
+-- Alert Link
+link :
+    { onPress : Maybe msg
+    , label : UiElement context msg
+    }
+    -> UiElement context msg
+link { onPress, label } =
+    Internal.fromElement
+        (\context ->
+            let
+                role = context.parentRole |> Maybe.withDefault Primary
+
+                fontColor =
+                    alertLinkFontColor context.themeColor role
+            in
+            Input.button
+                [ Font.bold, Font.color fontColor ]
+                { onPress = onPress
+                , label = Internal.toElement context label
+                }
+        )

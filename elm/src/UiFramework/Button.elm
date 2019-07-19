@@ -22,14 +22,18 @@ import Element.Input as Input
 import Element.Region as Region
 import UiFramework.Colors exposing (..)
 import UiFramework.Icon as Icon
+import UiFramework.Internal as Internal
 import UiFramework.Types exposing (Role(..), ScreenSize(..))
 
 
+type alias UiElement context msg =
+    Internal.WithContext (Internal.UiContextual context) msg
 
-{- Button type -}
+
+{-| Button type -}
 
 
-type Button msg
+type Button context msg
     = Button (Options msg)
 
 
@@ -46,52 +50,52 @@ type alias Options msg =
     }
 
 
-withRole : Role -> Button msg -> Button msg
+withRole : Role -> Button context msg -> Button context msg
 withRole role (Button options) =
     Button { options | role = role }
 
 
-withOutlined : Button msg -> Button msg
+withOutlined : Button context msg -> Button context msg
 withOutlined (Button options) =
     Button { options | outlined = True }
 
 
-withBlock : Button msg -> Button msg
+withBlock : Button context msg -> Button context msg
 withBlock (Button options) =
     Button { options | block = True }
 
 
-withDisabled : Button msg -> Button msg
+withDisabled : Button context msg -> Button context msg
 withDisabled (Button options) =
     Button { options | disabled = True }
 
 
-withLarge : Button msg -> Button msg
+withLarge : Button context msg -> Button context msg
 withLarge (Button options) =
     Button { options | size = LG }
 
 
-withSmall : Button msg -> Button msg
+withSmall : Button context msg -> Button context msg
 withSmall (Button options) =
     Button { options | size = SM }
 
 
-withMessage : Maybe msg -> Button msg -> Button msg
+withMessage : Maybe msg -> Button context msg -> Button context msg
 withMessage msg (Button options) =
     Button { options | onPress = msg }
 
 
-withIcon : Icon.Icon -> Button msg -> Button msg
+withIcon : Icon.Icon -> Button context msg -> Button context msg
 withIcon icon (Button options) =
     Button { options | icon = Just icon }
 
 
-withLabel : String -> Button msg -> Button msg
+withLabel : String -> Button context msg -> Button context msg
 withLabel label (Button options) =
     Button { options | label = label }
 
 
-withExtraAttrs : List (Attribute msg) -> Button msg -> Button msg
+withExtraAttrs : List (Attribute msg) -> Button context msg -> Button context msg
 withExtraAttrs attributes (Button options) =
     Button { options | attributes = attributes }
 
@@ -110,12 +114,12 @@ defaultOptions =
     }
 
 
-default : Button msg
+default : Button context msg
 default =
     Button defaultOptions
 
 
-simple : msg -> String -> Button msg
+simple : msg -> String -> Button context msg
 simple msg label =
     default
         |> withMessage (Just msg)
@@ -126,29 +130,32 @@ simple msg label =
 -- Rendering the button
 
 
-view : Button msg -> Element msg
+view : Button context msg -> UiElement context msg
 view (Button options) =
-    Input.button
-        (viewAttributes options)
-        { onPress = options.onPress
-        , label =
-            case options.icon of
-                Nothing ->
-                    text options.label
+    Internal.fromElement
+        (\context ->
+            Input.button
+                (viewAttributes context options)
+                { onPress = options.onPress
+                , label =
+                    case options.icon of
+                        Nothing ->
+                            text options.label
 
-                Just icon ->
-                    row [ spacing 5 ] [ el [] <| Icon.view icon, el [] (text options.label) ]
-        }
+                        Just icon ->
+                            row [ spacing 5 ] [ el [] <| Icon.view icon, el [] (text options.label) ]
+                }
+        )
 
 
-viewAttributes : Options mag -> List (Attribute msg)
-viewAttributes options =
+viewAttributes : (Internal.UiContextual context) -> Options mag -> List (Attribute msg)
+viewAttributes context options =
     let
         backgroundColor =
-            defaultThemeColor options.role
+            context.themeColor options.role
 
         borderColor =
-            defaultThemeColor options.role
+            context.themeColor options.role
 
         fontColor =
             contrastTextColor backgroundColor defaultTextDark defaultTextLight

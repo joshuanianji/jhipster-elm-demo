@@ -37,7 +37,6 @@ import Url exposing (Url)
 import UiFramework.Colors as Colors
 import UiFramework.Navbar as Navbar
 import UiFramework.Toasty
-import UiFramework.Types exposing (Role(..))
 import Utils
 
 

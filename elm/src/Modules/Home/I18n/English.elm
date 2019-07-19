@@ -21,7 +21,7 @@ translate phrase =
             "sign in"
 
         SignInSuffix ->
-            ", you can try the default accounts:<br/> <br/>"
+            ", you can try the default accounts:"
 
         AdminAccountInfo ->
             "- Administrator (login=\"admin\" and password=\"admin\")"

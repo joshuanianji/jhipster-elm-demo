@@ -207,6 +207,26 @@ colorLevel level color =
 
 
 
+alertBackgroundColor : (Role -> Color) -> Role -> Color
+alertBackgroundColor themeColor =
+    themeColor >> (colorLevel -10)
+
+
+alertBorderColor : (Role -> Color) -> Role -> Color
+alertBorderColor themeColor =
+    themeColor >> (colorLevel -9)
+
+
+alertFontColor : (Role -> Color) -> Role -> Color
+alertFontColor themeColor =
+    themeColor >> (colorLevel 6)
+
+
+alertLinkFontColor : (Role -> Color) -> Role -> Color
+alertLinkFontColor themeColor =
+    themeColor >> (darken 0.3)
+
+
 -- Util functions
 -- Copied from https://github.com/lucamug/elm-style-framework
 

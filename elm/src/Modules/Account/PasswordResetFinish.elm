@@ -11,12 +11,15 @@ import Element.Input as Input
 import Form exposing (Form)
 import Form.View
 import Http
+import I18n exposing (Language(..))
+import Modules.Account.Common exposing(Context, UiElement, toContext, tt)
 import Modules.Account.I18n.Phrases as AccountPhrases
 import Modules.Account.I18n.Translator exposing(translator)
 import RemoteData exposing (RemoteData(..), WebData)
 import Routes exposing (Route(..), routeToUrlString)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
 import Toasty.Defaults
+import UiFramework exposing (WithContext, UiContextual, toElement, fromElement, uiText, uiRow, uiColumn, uiParagraph, flatMap)
 import UiFramework.Alert as Alert
 import UiFramework.Form
 import UiFramework.Toasty
@@ -137,25 +140,13 @@ view sharedState model =
             translator sharedState.language
     in
     ( "Reset"
-    , el
-        [ width fill, height fill, centerX, paddingXY 10 10 ]
-        ( case model.key of
-            Nothing ->
-                Alert.simple Danger <|
-                    ( text <| translate AccountPhrases.MissingResetKey )
-            Just k ->
-                content sharedState model
-        )
+    , toElement (toContext sharedState) (content model)
     )
 
 
-content : SharedState -> Model -> Element Msg
-content sharedState model =
-    let
-        translate =
-            translator sharedState.language
-    in
-    column
+content : Model -> UiElement Msg
+content model =
+    uiColumn
         [ width fill
         , height fill
         , paddingXY 20 10
@@ -164,23 +155,31 @@ content sharedState model =
         ]
         [ h1
             [ paddingXY 0 30 ]
-            ( text <| translate AccountPhrases.ResetPasswordTitle )
-        , UiFramework.Form.layout
-            { onChange = FormChanged
-            , action = translate AccountPhrases.ResetButtonLabel
-            , loading = translate AccountPhrases.ResetButtonLoading
-            , validation = Form.View.ValidateOnSubmit
-            }
-            (form sharedState)
-            model.resetForm
+            <| tt AccountPhrases.ResetPasswordTitle
+        , case model.key of
+            Nothing ->
+                Alert.simple Danger <|
+                    tt AccountPhrases.MissingResetKey
+            Just k ->
+                flatMap
+                    (\context ->
+                        UiFramework.Form.layout
+                            { onChange = FormChanged
+                            , action = context.translate AccountPhrases.ResetButtonLabel
+                            , loading = context.translate AccountPhrases.ResetButtonLoading
+                            , validation = Form.View.ValidateOnSubmit
+                            }
+                            (form context.language)
+                            model.resetForm
+                    )
         ]
 
 
-form : SharedState -> Form Values Msg
-form sharedState =
+form : Language -> Form Values Msg
+form language =
     let
         translate =
-            translator sharedState.language
+            translator language
 
         passwordField =
             Form.passwordField

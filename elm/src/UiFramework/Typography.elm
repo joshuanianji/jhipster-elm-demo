@@ -8,61 +8,67 @@ module UiFramework.Typography exposing (h1, h2, h3, h4, h5, h6, textExtraSmall, 
 
 -}
 
-import Element exposing (Element, alignLeft, paddingEach, text)
+import Element exposing (alignLeft, paddingEach, text)
 import Element.Font as Font
 import Element.Region as Region
+import UiFramework.Internal as Internal
+import UiFramework.Types exposing (Role(..), ScreenSize(..), getFontSize)
+
+
+type alias UiElement context msg =
+    Internal.WithContext (Internal.UiContextual context) msg
 
 
 {-| -}
-h1 : List (Element.Attribute msg) -> Element.Element msg -> Element.Element msg
+h1 : List (Element.Attribute msg) -> UiElement context msg -> UiElement context msg
 h1 listAttr element =
     heading SizeH1 listAttr element
 
 
 {-| -}
-h2 : List (Element.Attribute msg) -> Element.Element msg -> Element.Element msg
+h2 : List (Element.Attribute msg) -> UiElement context msg -> UiElement context msg
 h2 =
     heading SizeH2
 
 
 {-| -}
-h3 : List (Element.Attribute msg) -> Element.Element msg -> Element.Element msg
+h3 : List (Element.Attribute msg) -> UiElement context msg -> UiElement context msg
 h3 =
     heading SizeH3
 
 
 {-| -}
-h4 : List (Element.Attribute msg) -> Element.Element msg -> Element.Element msg
+h4 : List (Element.Attribute msg) -> UiElement context msg -> UiElement context msg
 h4 =
     heading SizeH4
 
 
 {-| -}
-h5 : List (Element.Attribute msg) -> Element.Element msg -> Element.Element msg
+h5 : List (Element.Attribute msg) -> UiElement context msg -> UiElement context msg
 h5 =
     heading SizeH5
 
 
 {-| -}
-h6 : List (Element.Attribute msg) -> Element.Element msg -> Element.Element msg
+h6 : List (Element.Attribute msg) -> UiElement context msg -> UiElement context msg
 h6 =
     heading SizeH6
 
 
 {-| -}
-textLead : List (Element.Attribute msg) -> Element.Element msg -> Element.Element msg
+textLead : List (Element.Attribute msg) -> UiElement context msg -> UiElement context msg
 textLead =
     textSection SizeLead
 
 
 {-| -}
-textSmall : List (Element.Attribute msg) -> Element.Element msg -> Element.Element msg
+textSmall : List (Element.Attribute msg) -> UiElement context msg -> UiElement context msg
 textSmall =
     textSection SizeSmall
 
 
 {-| -}
-textExtraSmall : List (Element.Attribute msg) -> Element.Element msg -> Element.Element msg
+textExtraSmall : List (Element.Attribute msg) -> UiElement context msg -> UiElement context msg
 textExtraSmall =
     textSection SizeExtraSmall
 
@@ -70,32 +76,38 @@ textExtraSmall =
 textSection :
     FontLevel
     -> List (Element.Attr () msg)
-    -> Element msg
-    -> Element msg
+    -> UiElement context msg
+    -> UiElement context msg
 textSection level attributes child =
-    Element.el
-        ((Font.size <| fontSize level)
-            :: attributes
+    Internal.fromElement
+        (\context ->
+            Element.el
+                ((Font.size <| fontSize level)
+                    :: attributes
+                )
+                (Internal.toElement context child)
         )
-        child
 
 
 heading :
     FontLevel
     -> List (Element.Attribute msg)
-    -> Element.Element msg
-    -> Element.Element msg
+    -> UiElement context msg
+    -> UiElement context msg
 heading level attributes child =
-    Element.el
-        ([ Region.heading <| headingLevel level
-         , Font.size <| fontSize level
-         , paddingEach { top = 0, right = 0, bottom = 0, left = 0 }
-         , alignLeft
-         , Font.bold
-         ]
-            ++ attributes
+    Internal.fromElement
+        (\context ->
+            Element.el
+                ([ Region.heading <| headingLevel level
+                , Font.size <| fontSize level
+                , paddingEach { top = 0, right = 0, bottom = 0, left = 0 }
+                , alignLeft
+                , Font.bold
+                ]
+                    ++ attributes
+                )
+                (Internal.toElement context child)
         )
-        child
 
 
 type FontLevel

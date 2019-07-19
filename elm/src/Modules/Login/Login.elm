@@ -13,12 +13,15 @@ import Element.Input as Input
 import Form exposing (Form)
 import Form.View
 import Http
+import I18n exposing (Language(..))
+import Modules.Login.Common exposing (Context, UiElement, toContext, tt)
 import Modules.Login.I18n.Phrases as LoginPhrases
 import Modules.Login.I18n.Translator exposing (translator)
 import RemoteData exposing (RemoteData(..), WebData)
 import Routes exposing (Route(..), routeToUrlString)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
 import Toasty.Defaults
+import UiFramework exposing (UiContextual, WithContext, flatMap, fromElement, toElement, uiColumn, uiParagraph, uiRow, uiText)
 import UiFramework.Alert as Alert
 import UiFramework.Form
 import UiFramework.Padding
@@ -119,75 +122,77 @@ view sharedState model =
             translator sharedState.language
     in
     ( "Login"
-    , el
-        [ height fill
-        , width fill
-        , centerX
-        , paddingXY 100 10
-        ]
-        (case sharedState.user of
-            Just user ->
-                el
-                    [ paddingXY 30 30
-                    , Font.size 28
-                    , Font.color (rgb255 59 59 59)
-                    , Font.light
-                    ]
-                    (text <| translate <| LoginPhrases.LoggedInAs user.username)
-
-            Nothing ->
-                content sharedState model
-        )
+    , toElement (toContext sharedState) (content model)
     )
 
 
-content : SharedState -> Model -> Element Msg
-content sharedState model =
-    let
-        translate =
-            translator sharedState.language
-    in
-    column
+content : Model -> UiElement Msg
+content model =
+    uiColumn
         [ width fill
         , height fill
         , paddingXY 20 10
         , spacing 20
         , Font.alignLeft
         ]
-        [ h1 [ paddingXY 0 30 ]
-            (text <| translate LoginPhrases.LoginTitle)
-        , UiFramework.Form.layout
-            { onChange = FormChanged
-            , action = translate LoginPhrases.SignInButtonLabel
-            , loading = translate LoginPhrases.SignInLoadingLabel
-            , validation = Form.View.ValidateOnSubmit
-            }
-            (form sharedState)
-            model
+        [ h1 [ paddingXY 0 30 ] <|
+            tt LoginPhrases.LoginTitle
+        , flatMap
+            (\context ->
+                case context.user of
+                    Just user ->
+                        Alert.simple Warning <|
+                            (tt <| LoginPhrases.LoggedInAs user.username)
+
+                    Nothing ->
+                        loginForm model
+            )
+        ]
+        |> UiFramework.Padding.responsive
+
+
+loginForm : Model -> UiElement Msg
+loginForm model =
+    uiColumn
+        [ width fill
+        , height fill
+        , spacing 20
+        , Font.alignLeft
+        ]
+        [ flatMap
+            (\context ->
+                UiFramework.Form.layout
+                    { onChange = FormChanged
+                    , action = context.translate LoginPhrases.SignInButtonLabel
+                    , loading = context.translate LoginPhrases.SignInLoadingLabel
+                    , validation = Form.View.ValidateOnSubmit
+                    }
+                    (form context.language)
+                    model
+            )
         , Alert.simple Warning <|
-            Alert.link Warning
+            Alert.link
                 { onPress = Just <| NavigateTo PasswordResetRequest
-                , label = text <| translate LoginPhrases.ForgetPassword
+                , label = tt LoginPhrases.ForgetPassword
                 }
         , Alert.simple Warning <|
-            paragraph
+            uiParagraph
                 [ Font.alignLeft ]
-                [ text <| translate LoginPhrases.NoAccountYet
-                , text " "
-                , Alert.link Warning
+                [ tt LoginPhrases.NoAccountYet
+                , Alert.link
                     { onPress = Just <| NavigateTo Register
-                    , label = text <| translate LoginPhrases.RegisterNewAccount
+                    , label = tt LoginPhrases.RegisterNewAccount
                     }
                 ]
         ]
-        |> UiFramework.Padding.responsive sharedState
 
 
-form : SharedState -> Form Values Msg
-form sharedState =
+
+form : Language -> Form Values Msg
+form language =
     let
         translate =
-            translator sharedState.language
+            translator language
 
         usernameField =
             Form.textField

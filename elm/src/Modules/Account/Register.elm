@@ -12,7 +12,8 @@ import Element.Input as Input
 import Form exposing (Form)
 import Form.View
 import Http
-import I18n
+import I18n exposing (Language(..))
+import Modules.Account.Common exposing(Context, UiElement, toContext, tt)
 import LocalStorage exposing (Event(..), jwtAuthenticationTokenKey)
 import Modules.Account.I18n.Phrases as AccountPhrases
 import Modules.Account.I18n.Translator exposing (translator)
@@ -20,6 +21,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Routes exposing (Route(..), routeToUrlString)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
 import Toasty.Defaults
+import UiFramework exposing (WithContext, UiContextual, toElement, fromElement, uiText, uiRow, uiColumn, uiParagraph, flatMap)
 import UiFramework.Form
 import UiFramework.Padding
 import UiFramework.Typography exposing (h1)
@@ -118,19 +120,13 @@ update sharedState msg model =
 view : SharedState -> Model -> ( String, Element Msg )
 view sharedState model =
     ( "Registration"
-    , el
-        [ width fill, height fill, centerX, paddingXY 100 10 ]
-        (content sharedState model)
+    , toElement (toContext sharedState) (content model)
     )
 
 
-content : SharedState -> Model -> Element Msg
-content sharedState model =
-    let
-        translate =
-            translator sharedState.language
-    in
-    column
+content : Model -> UiElement Msg
+content model =
+    uiColumn
         [ width fill
         , height fill
         , alignLeft
@@ -138,24 +134,27 @@ content sharedState model =
         , spacing 20
         ]
         [ h1 [ paddingXY 0 30 ]
-            (text <| translate AccountPhrases.RegisterTitle)
-        , UiFramework.Form.layout
-            { onChange = FormChanged
-            , action = translate AccountPhrases.RegisterButtonLabel
-            , loading = translate AccountPhrases.RegisterButtonLoading
-            , validation = Form.View.ValidateOnSubmit
-            }
-            (form sharedState)
-            model
+            <| tt AccountPhrases.RegisterTitle
+        , flatMap
+            (\context ->
+                UiFramework.Form.layout
+                    { onChange = FormChanged
+                    , action = context.translate AccountPhrases.RegisterButtonLabel
+                    , loading = context.translate AccountPhrases.RegisterButtonLoading
+                    , validation = Form.View.ValidateOnSubmit
+                    }
+                    (form context.language)
+                    model
+            )
         ]
-        |> UiFramework.Padding.responsive sharedState
+        |> UiFramework.Padding.responsive
 
 
-form : SharedState -> Form Values Msg
-form sharedState =
+form : Language -> Form Values Msg
+form language =
     let
         translate =
-            translator sharedState.language
+            translator language
 
         usernameField =
             Form.textField
