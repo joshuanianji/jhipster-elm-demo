@@ -18,6 +18,7 @@ import SharedState exposing (SharedState, SharedStateUpdate(..))
 import Toasty.Defaults
 import UiFramework.Form
 import UiFramework.Padding
+import UiFramework.Password
 import UiFramework.Toasty
 import UiFramework.Typography exposing (h1)
 import Utils
@@ -165,7 +166,7 @@ form sharedState =
 
         passwordField =
             Form.passwordField
-                { parser = Ok
+                { parser = UiFramework.Password.validate
                 , value = .password
                 , update = \value values -> { values | password = value }
                 , attributes =
