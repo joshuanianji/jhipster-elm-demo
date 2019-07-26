@@ -4,7 +4,7 @@ module UiFramework.Padding exposing (responsive)
    Responsive padding using fillPortion
 -}
 
-import Element exposing (..)
+import Element exposing (DeviceClass(..), Orientation(..), el, fill, fillPortion, none, row, width)
 import UiFramework.Internal as Internal
 
 

@@ -1,9 +1,10 @@
-module Api.Data.User exposing (User, decoder, encoder)
+module Modules.Shared.Api.User exposing (User, decoder, encoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (optional, required)
 import Json.Encode as Encode
 import Json.Encode.Extra exposing (maybe)
+
 
 type alias User =
     { id : Int
@@ -16,6 +17,7 @@ type alias User =
     , languageKey : String
     , authorities : List String
     }
+
 
 decoder : Decoder User
 decoder =

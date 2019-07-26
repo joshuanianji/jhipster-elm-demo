@@ -1,4 +1,4 @@
-module Api.Data.KeyAndPasswordVM exposing (KeyAndPasswordVM, decoder, encoder)
+module Modules.Account.Api.KeyAndPasswordVM exposing (KeyAndPasswordVM, decoder, encoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (optional)

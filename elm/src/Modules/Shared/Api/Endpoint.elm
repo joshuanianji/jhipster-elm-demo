@@ -1,13 +1,13 @@
-module Api.Endpoint exposing
+module Modules.Shared.Api.Endpoint exposing
     ( Endpoint(..)
-    , unwrap
-    , authentication
     , account
-    , register
     , activate
-    , resetPasswordRequest
-    , resetPassword
+    , authentication
     , changePassword
+    , register
+    , resetPassword
+    , resetPasswordRequest
+    , unwrap
     )
 
 import Url.Builder exposing (QueryParameter)
@@ -59,14 +59,14 @@ activate =
 
 resetPasswordRequest : Endpoint
 resetPasswordRequest =
-    url [ "account", "reset-password", "init"] []
+    url [ "account", "reset-password", "init" ] []
 
 
 resetPassword : Endpoint
 resetPassword =
-    url [ "account", "reset-password", "finish"] []
+    url [ "account", "reset-password", "finish" ] []
 
 
 changePassword : Endpoint
 changePassword =
-    url [ "account", "change-password"] []
+    url [ "account", "change-password" ] []

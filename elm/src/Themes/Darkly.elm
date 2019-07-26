@@ -1,9 +1,24 @@
-module UiFramework.Themes.Darkly exposing (darklyThemeConfig)
+module Themes.Darkly exposing (darklyThemeConfig)
 
-import Element exposing (Color, fromRgb, rgb255, rgba, toRgb)
-import Element.Font as Font
-import UiFramework.Colors exposing (..)
-import UiFramework.Configuration exposing (..)
+import UiFramework.Colors exposing (contrastTextColor, getColor, transparent)
+import UiFramework.Configuration
+    exposing
+        ( AlertConfig
+        , Colors
+        , DropdownConfig
+        , InputConfig
+        , ThemeColor
+        , ThemeConfig
+        , bootstrapColors
+        , defaultAlertConfig
+        , defaultButtonConfig
+        , defaultDropdownConfig
+        , defaultFontConfig
+        , defaultFontSize
+        , defaultInputConfig
+        , defaultNavConfig
+        , defaultNavbarConfig
+        )
 import UiFramework.Types exposing (Role(..), Size(..))
 
 
@@ -74,8 +89,8 @@ alertConfig themeColor =
         , linkFontColor = \_ -> darklyColors.white
         , fontSize = defaultFontSize
         , borderColor = themeColor
-        , borderWidth = \size -> 1
-        , borderRadius = \size -> 4
+        , borderWidth = \_ -> 1
+        , borderRadius = \_ -> 4
     }
 
 

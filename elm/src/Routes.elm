@@ -65,17 +65,16 @@ routeToUrlString route =
                 PasswordResetRequest ->
                     [ "reset", "request" ]
 
-                PasswordResetFinish key ->
+                PasswordResetFinish _ ->
                     [ "reset", "finish" ]
 
-                -- TODO: do we need to put key in url?
                 Settings ->
                     [ "account", "settings" ]
 
                 PasswordUpdate ->
                     [ "account", "password" ]
 
-                Activate key ->
+                Activate _ ->
                     [ "activate" ]
 
                 NotFound ->

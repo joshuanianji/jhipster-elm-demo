@@ -1,10 +1,9 @@
-module Modules.Error.NotFound exposing (Model, Msg(..), content, init, subscriptions, update, view)
+module Modules.Error.NotFound exposing (Model, Msg(..), content, init, update, view)
 
-import Element exposing (..)
+import Element exposing (Element, centerX, fill, height, paddingXY)
 import Element.Font as Font
-import Modules.Error.Common exposing (toContext, tt)
+import Modules.Error.Common exposing (UiElement, toContext, tt)
 import Modules.Error.I18n.Phrases as ErrorPhrases
-import Modules.Error.I18n.Translator exposing (translator)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
 import UiFramework exposing (toElement, uiColumn)
 import UiFramework.Typography exposing (h1)
@@ -31,23 +30,15 @@ update msg model =
 
 
 view : SharedState -> Model -> ( String, Element Msg )
-view sharedState model =
-    let
-        translate =
-            translator sharedState.language
-    in
+view sharedState _ =
     ( " 404 Not Found"
     , toElement (toContext sharedState) content
     )
 
 
+content : UiElement Msg
 content =
     uiColumn
         [ height fill, centerX, paddingXY 10 10, Font.center ]
         [ h1 [] <| tt ErrorPhrases.NotFoundTitle
         ]
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none

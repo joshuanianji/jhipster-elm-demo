@@ -1,4 +1,4 @@
-module Api.Helper exposing
+module Modules.Shared.Api.Helper exposing
     ( delete
     , deleteExpectNothing
     , get

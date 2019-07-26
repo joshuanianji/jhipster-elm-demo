@@ -1,8 +1,6 @@
 module UiFramework.Toasty exposing (view)
 
 import Element exposing (Element, html)
-import Html exposing (..)
-import Html.Attributes exposing (..)
 import Toasty
 import Toasty.Defaults
 

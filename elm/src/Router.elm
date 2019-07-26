@@ -1,7 +1,5 @@
 module Router exposing (DropdownMenuState(..), Model, Msg(..), Page(..), init, initWith, subscriptions, update)
 
-import Api.Data.User as User
-import Api.Request.Account exposing (getCurrentAccount)
 import Browser.Events as Events
 import Browser.Navigation
 import I18n
@@ -17,6 +15,8 @@ import Modules.Error.NotFound as NotFound
 import Modules.Home.Home as Home
 import Modules.Login.Login as Login
 import Modules.Login.Logout as Logout
+import Modules.Shared.Api.Request exposing (getCurrentAccount)
+import Modules.Shared.Api.User exposing (User)
 import RemoteData exposing (RemoteData(..), WebData)
 import Routes exposing (Route(..), fromUrl, routeToUrlString)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
@@ -61,7 +61,7 @@ type Page
 type Msg
     = UrlChanged Url
     | NavigateTo Route
-    | GetAccountResponse (WebData User.User)
+    | GetAccountResponse (WebData User)
     | ToastyMsg (Toasty.Msg Toasty.Defaults.Toast)
     | ToggleMenu
     | ToggleAccountDropdown

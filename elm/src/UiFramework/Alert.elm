@@ -12,12 +12,11 @@ module UiFramework.Alert exposing
     , withSmall
     )
 
-import Element exposing (..)
+import Element exposing (Attribute, el, fill, none, paddingXY, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
-import UiFramework.Configuration exposing (..)
 import UiFramework.Internal as Internal
 import UiFramework.Types exposing (Role(..), Size(..))
 
@@ -68,7 +67,7 @@ defaultOptions =
     { role = Primary
     , size = SizeDefault
     , attributes = []
-    , child = Internal.fromElement (\context -> none)
+    , child = Internal.fromElement (\_ -> none)
     }
 
 

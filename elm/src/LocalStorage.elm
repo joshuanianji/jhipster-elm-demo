@@ -26,7 +26,7 @@ import Json.Encode as Encode exposing (Value)
 
 ---- CONSTANTS ----
 
-
+jwtAuthenticationTokenKey : String
 jwtAuthenticationTokenKey =
     "jhi-authenticationToken"
 

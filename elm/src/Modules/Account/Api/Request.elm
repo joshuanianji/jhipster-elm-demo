@@ -1,23 +1,13 @@
-module Api.Request.Account exposing (activateAccount, getCurrentAccount, registerAccount, requestResetPassword, resetPassword, updatePassword, updateSettings)
+module Modules.Account.Api.Request exposing (activateAccount, registerAccount, requestResetPassword, resetPassword, updatePassword, updateSettings)
 
-import Api.Data.KeyAndPasswordVM as KeyAndPasswordVM exposing (KeyAndPasswordVM)
-import Api.Data.PasswordUpdateVM as PasswordUpdateVM exposing (PasswordUpdateVM)
-import Api.Data.RegisterVM as RegisterVM exposing (RegisterVM)
-import Api.Data.Settings as Settings exposing (Settings)
-import Api.Data.User as User exposing (User)
-import Api.Endpoint as Endpoint exposing (unwrap)
-import Api.Helper exposing (get, getExpectNothing, postExpectNothing)
 import Http
+import Modules.Account.Api.KeyAndPasswordVM as KeyAndPasswordVM exposing (KeyAndPasswordVM)
+import Modules.Account.Api.PasswordUpdateVM as PasswordUpdateVM exposing (PasswordUpdateVM)
+import Modules.Account.Api.RegisterVM as RegisterVM exposing (RegisterVM)
+import Modules.Account.Api.SettingsVM as SettingsVM exposing (SettingsVM)
+import Modules.Shared.Api.Endpoint as Endpoint exposing (unwrap)
+import Modules.Shared.Api.Helper exposing (getExpectNothing, postExpectNothing)
 import RemoteData exposing (RemoteData(..), WebData)
-
-
-getCurrentAccount : Maybe String -> (WebData User -> msg) -> Cmd msg
-getCurrentAccount token toMsg =
-    get
-        token
-        (unwrap Endpoint.account)
-        toMsg
-        User.decoder
 
 
 registerAccount : RegisterVM -> (WebData () -> msg) -> Cmd msg
@@ -55,12 +45,12 @@ resetPassword keyAndPasswordVM toMsg =
         toMsg
 
 
-updateSettings : Maybe String -> Settings -> (WebData () -> msg) -> Cmd msg
+updateSettings : Maybe String -> SettingsVM -> (WebData () -> msg) -> Cmd msg
 updateSettings token settings toMsg =
     postExpectNothing
         token
         (unwrap Endpoint.account)
-        (Http.jsonBody <| Settings.encoder settings)
+        (Http.jsonBody <| SettingsVM.encoder settings)
         toMsg
 
 

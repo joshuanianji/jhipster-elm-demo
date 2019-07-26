@@ -14,13 +14,11 @@ module UiFramework.Button exposing
     , withSmall
     )
 
-import Element exposing (..)
+import Element exposing (Attribute, el, paddingXY, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
-import UiFramework.Colors exposing (..)
-import UiFramework.Configuration exposing (..)
 import UiFramework.Icon as Icon
 import UiFramework.Internal as Internal
 import UiFramework.Types exposing (Role(..), Size(..))

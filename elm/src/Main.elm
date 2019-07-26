@@ -1,7 +1,5 @@
 module Main exposing (AppState(..), Flags, Model, Msg(..), WindowSize, getReady, getUserLanguage, handleStorageEvent, handleWindowSize, init, logError, main, subscriptions, update, updateJwtToken, updateRouter, updateTime, updateTimeZone, view, withErrorLog)
 
-import Api.Data.User exposing (User)
-import Api.Request.Account exposing (getCurrentAccount)
 import Browser
 import Browser.Events
 import Browser.Navigation
@@ -10,6 +8,8 @@ import Html
 import I18n exposing (Language(..), languageFromCode)
 import Json.Decode as Decode
 import LocalStorage exposing (Event(..), jwtAuthenticationTokenKey)
+import Modules.Shared.Api.Request exposing (getCurrentAccount)
+import Modules.Shared.Api.User exposing (User)
 import RemoteData exposing (RemoteData(..), WebData)
 import Router
 import RouterView
@@ -99,7 +99,7 @@ subscriptions model =
                 WindowSizeChange (WindowSize x y)
             )
         , case model.appState of
-            Ready sharedState routerModel ->
+            Ready _ routerModel ->
                 Sub.map RouterMsg <| Router.subscriptions routerModel
 
             _ ->
@@ -151,7 +151,7 @@ update msg model =
         WindowSizeChange winSize ->
             handleWindowSize model winSize
 
-        GetAccountResponse (RemoteData.Failure err) ->
+        GetAccountResponse (RemoteData.Failure _) ->
             -- The JWT Token expired or no token in local storage
             getReady Nothing model
 
@@ -185,11 +185,11 @@ getReady maybeUser model =
             , Cmd.map RouterMsg routerCmd
             )
 
-        Ready sharedState routerModel ->
+        Ready _ _ ->
             ( model, Cmd.none )
+                -- Is this an app logic error?
                 |> withErrorLog "Response from getAccount when app state is already Ready!"
 
-        -- Is this an app logic error?
         FailedToInitialize ->
             ( model, Cmd.none )
 
@@ -267,7 +267,7 @@ handleStorageEvent model event =
             else
                 ( model, Cmd.none )
 
-        WriteFailure key value err ->
+        WriteFailure key _ err ->
             ( model, Cmd.none )
                 |> withErrorLog
                     ("Unable to write to localStorage key '"
@@ -292,10 +292,11 @@ updateJwtToken model value =
                     , Cmd.none
                     )
 
-                Just jwtToken ->
+                Just _ ->
+                    -- In what situation jwt token got updated when app state is Ready?
+                    -- Other window tab logged out and logged in again? Need more tests and investigation!
                     ( model, Cmd.none )
 
-        -- In what situation jwt token got updated when app state is Ready? Other window tab logged out and logged in again? Need more tests and investigation!
         _ ->
             ( model, Cmd.none )
 
@@ -303,7 +304,7 @@ updateJwtToken model value =
 handleWindowSize : Model -> WindowSize -> ( Model, Cmd Msg )
 handleWindowSize model winSize =
     case model.appState of
-        NotReady time zone device ->
+        NotReady time zone _ ->
             ( { model | appState = NotReady time zone (classifyDevice winSize) }
             , Cmd.none
             )
@@ -324,7 +325,7 @@ withErrorLog err updateTuple =
 
 
 logError : String -> Cmd Msg
-logError error =
+logError _ =
     Cmd.none
 
 

@@ -1,21 +1,21 @@
 module Modules.Account.PasswordResetFinish exposing (Model, Msg(..), Values, content, form, init, update, view)
 
-import Api.Request.Account exposing (resetPassword)
 import Browser.Navigation exposing (pushUrl)
-import Element exposing (..)
+import Element exposing (Element, fill, height, paddingXY, spacing, width)
 import Element.Font as Font
 import Form exposing (Form)
 import Form.View
 import Http
 import I18n exposing (Language(..))
-import Modules.Account.Common exposing( UiElement, toContext, tt)
+import Modules.Account.Api.Request exposing (resetPassword)
+import Modules.Account.Common exposing (UiElement, toContext, tt)
 import Modules.Account.I18n.Phrases as AccountPhrases
-import Modules.Account.I18n.Translator exposing(translator)
+import Modules.Account.I18n.Translator exposing (translator)
 import RemoteData exposing (RemoteData(..), WebData)
 import Routes exposing (Route(..), routeToUrlString)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
 import Toasty.Defaults
-import UiFramework exposing (toElement, uiColumn, flatMap)
+import UiFramework exposing (flatMap, toElement, uiColumn)
 import UiFramework.Alert as Alert
 import UiFramework.Form
 import UiFramework.Types exposing (Role(..))
@@ -74,9 +74,11 @@ update sharedState msg model =
 
                 _ ->
                     let
-                        oldResetForm = model.resetForm
+                        oldResetForm =
+                            model.resetForm
 
-                        newResetForm = { oldResetForm | state = Form.View.Loading }
+                        newResetForm =
+                            { oldResetForm | state = Form.View.Loading }
 
                         keyAndPasswordVM =
                             { key = model.key
@@ -99,11 +101,12 @@ update sharedState msg model =
                             translate AccountPhrases.ServerError
             in
             let
-                oldResetForm = model.resetForm
+                oldResetForm =
+                    model.resetForm
 
-                newResetForm = { oldResetForm | state = Form.View.Error errorString }
+                newResetForm =
+                    { oldResetForm | state = Form.View.Error errorString }
             in
-            
             ( { model | resetForm = newResetForm }
             , Cmd.none
             , ShowToast <| Toasty.Defaults.Error (translate AccountPhrases.Error) errorString
@@ -111,11 +114,13 @@ update sharedState msg model =
 
         ResetResponse (RemoteData.Success ()) ->
             let
-                oldResetForm = model.resetForm
+                oldResetForm =
+                    model.resetForm
 
-                newResetForm = { oldResetForm | state = Form.View.Idle }
+                newResetForm =
+                    { oldResetForm | state = Form.View.Idle }
             in
-            ( { model |  resetForm = newResetForm }
+            ( { model | resetForm = newResetForm }
             , Utils.perform <| NavigateTo Login
             , ShowToast <|
                 Toasty.Defaults.Success
@@ -129,10 +134,6 @@ update sharedState msg model =
 
 view : SharedState -> Model -> ( String, Element Msg )
 view sharedState model =
-    let
-        translate =
-            translator sharedState.language
-    in
     ( "Reset"
     , toElement (toContext sharedState) (content model)
     )
@@ -149,12 +150,14 @@ content model =
         ]
         [ h1
             [ paddingXY 0 30 ]
-            <| tt AccountPhrases.ResetPasswordTitle
+          <|
+            tt AccountPhrases.ResetPasswordTitle
         , case model.key of
             Nothing ->
                 Alert.simple Danger <|
                     tt AccountPhrases.MissingResetKey
-            Just k ->
+
+            Just _ ->
                 flatMap
                     (\context ->
                         UiFramework.Form.layout

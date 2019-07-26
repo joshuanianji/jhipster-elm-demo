@@ -1,17 +1,17 @@
 module Modules.Account.Activate exposing (Model, Msg(..), init, update, view)
 
-import Api.Request.Account exposing (activateAccount)
 import Browser.Navigation exposing (pushUrl)
-import Element exposing (..)
+import Element exposing (Element, alignLeft, fill, height, paddingXY, spacing, width)
 import Http
-import Modules.Account.Common exposing(toContext, tt)
+import Modules.Account.Api.Request exposing (activateAccount)
+import Modules.Account.Common exposing (UiElement, toContext, tt)
 import Modules.Account.I18n.Phrases as AccountPhrases
 import Modules.Account.I18n.Translator exposing (translator)
 import RemoteData
 import Routes exposing (Route(..), routeToUrlString)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
 import Toasty.Defaults
-import UiFramework exposing ( toElement, uiText, uiColumn, uiParagraph)
+import UiFramework exposing (toElement, uiColumn, uiParagraph, uiText)
 import UiFramework.Alert as Alert
 import UiFramework.Padding
 import UiFramework.Types exposing (Role(..))
@@ -99,6 +99,7 @@ view sharedState model =
     )
 
 
+content : Model -> UiElement Msg
 content model =
     uiColumn
         [ width fill
@@ -107,8 +108,8 @@ content model =
         , paddingXY 20 10
         , spacing 20
         ]
-        [ h1 [ paddingXY 0 30 ]
-            <| tt AccountPhrases.ActivateTitle
+        [ h1 [ paddingXY 0 30 ] <|
+            tt AccountPhrases.ActivateTitle
         , case model.activateState of
             NoKey ->
                 Alert.simple Warning <|

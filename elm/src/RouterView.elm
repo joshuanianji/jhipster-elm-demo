@@ -1,8 +1,30 @@
 module RouterView exposing (view)
 
-
 import Browser
-import Element exposing (..)
+import Element
+    exposing
+        ( DeviceClass(..)
+        , Element
+        , Orientation(..)
+        , alignBottom
+        , centerY
+        , column
+        , el
+        , fill
+        , height
+        , html
+        , image
+        , inFront
+        , padding
+        , paddingEach
+        , paddingXY
+        , paragraph
+        , px
+        , rgb255
+        , row
+        , text
+        , width
+        )
 import Element.Background as Background
 import Element.Font as Font
 import FontAwesome.Brands
@@ -22,16 +44,15 @@ import Modules.Login.Login as Login
 import Modules.Login.Logout as Logout
 import Modules.Shared.I18n.Phrases as GlobalPhrases
 import Modules.Shared.I18n.Translator exposing (translator)
-import Router exposing (Model, DropdownMenuState(..), Page(..), Msg(..))
+import Router exposing (DropdownMenuState(..), Model, Msg(..), Page(..))
 import Routes exposing (Route(..))
 import SharedState exposing (SharedState, SharedStateUpdate(..))
+import Themes.Darkly exposing (darklyThemeConfig)
 import UiFramework exposing (toElement)
 import UiFramework.Colors as Colors
 import UiFramework.Configuration exposing (defaultThemeConfig)
 import UiFramework.Navbar as Navbar
 import UiFramework.Toasty
-import UiFramework.Themes.Darkly exposing (darklyThemeConfig)
-
 
 
 view : (Msg -> msg) -> SharedState -> Model -> Browser.Document msg
@@ -141,6 +162,7 @@ header sharedState model =
                 |> Navbar.DropdownItem
                 |> Navbar.withMenuIcon FontAwesome.Solid.flag
                 |> Navbar.withMenuTitle (I18n.languageName sharedState.language)
+
             -- Theme
             , Navbar.dropdown ToggleThemeDropdown ThemeOpen
                 |> Navbar.withDropdownMenuItems
@@ -152,6 +174,7 @@ header sharedState model =
                 |> Navbar.DropdownItem
                 |> Navbar.withMenuIcon FontAwesome.Brands.bootstrap
                 |> Navbar.withMenuTitle (translate GlobalPhrases.MenuTheme)
+
             -- Account
             , Navbar.dropdown ToggleAccountDropdown AccountOpen
                 |> Navbar.withDropdownMenuItems
@@ -220,44 +243,3 @@ version =
         , Font.size 10
         ]
         (text "0.0.1-SNAPSHOT")
-
-
-isCurrentRoute : Model -> Routes.Route -> Bool
-isCurrentRoute model route =
-    case ( model.currentPage, route ) of
-        ( HomePage _, Routes.Home ) ->
-            True
-
-        ( LoginPage _, Routes.Login ) ->
-            True
-
-        ( LogoutPage _, Routes.Logout ) ->
-            True
-
-        ( RegisterPage _, Routes.Register ) ->
-            True
-
-        _ ->
-            False
-
-
-isUnderAccount : Model -> Bool
-isUnderAccount model =
-    case model.currentPage of
-        LoginPage _ ->
-            True
-
-        RegisterPage _ ->
-            True
-
-        SettingsPage _ ->
-            True
-
-        PasswordUpdatePage _ ->
-            True
-
-        LogoutPage _ ->
-            True
-
-        _ ->
-            False

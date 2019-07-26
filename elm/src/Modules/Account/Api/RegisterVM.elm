@@ -1,4 +1,4 @@
-module Api.Data.RegisterVM exposing (RegisterVM, decoder, encoder)
+module Modules.Account.Api.RegisterVM exposing (RegisterVM, decoder, encoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (optional)

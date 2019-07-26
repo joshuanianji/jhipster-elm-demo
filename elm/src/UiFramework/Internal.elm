@@ -1,6 +1,6 @@
 module UiFramework.Internal exposing (UiContextual, WithContext, flatMap, fromElement, node, toElement, uiColumn, uiNone, uiParagraph, uiRow, uiText)
 
-import Element exposing (Attribute, Color, Device, Element)
+import Element exposing (Attribute, Device, Element)
 import UiFramework.Configuration exposing (ThemeConfig)
 import UiFramework.Types exposing (Role(..))
 
@@ -68,16 +68,15 @@ uiText f =
 uiRow : List (Attribute msg) -> List (WithContext (UiContextual c) msg) -> WithContext (UiContextual c) msg
 uiRow attrs =
     node
-        (\context ->
+        (\_ ->
             Element.row attrs
-         -- TODO adjust to column based on device class?
         )
 
 
 uiColumn : List (Attribute msg) -> List (WithContext (UiContextual c) msg) -> WithContext (UiContextual c) msg
 uiColumn attrs =
     node
-        (\context ->
+        (\_ ->
             Element.column attrs
         )
 
@@ -85,6 +84,6 @@ uiColumn attrs =
 uiParagraph : List (Attribute msg) -> List (WithContext (UiContextual c) msg) -> WithContext (UiContextual c) msg
 uiParagraph attrs =
     node
-        (\context ->
+        (\_ ->
             Element.paragraph attrs
         )

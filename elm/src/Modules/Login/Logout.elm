@@ -1,10 +1,9 @@
 module Modules.Login.Logout exposing (Model, Msg(..), content, init, update, view)
 
-import Element exposing (..)
+import Element exposing (Element, fill, height, paddingXY, width)
 import LocalStorage exposing (jwtAuthenticationTokenKey)
 import Modules.Login.Common exposing (UiElement, toContext, tt)
 import Modules.Login.I18n.Phrases as LoginPhrases
-import Modules.Login.I18n.Translator exposing (translator)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
 import UiFramework exposing (toElement, uiColumn)
 import UiFramework.Alert as Alert
@@ -28,18 +27,14 @@ init =
 
 
 update : SharedState -> Msg -> Model -> ( Model, Cmd Msg, SharedStateUpdate )
-update sharedState msg model =
+update _ msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none, NoUpdate )
 
 
 view : SharedState -> Model -> ( String, Element Msg )
-view sharedState model =
-    let
-        translate =
-            translator sharedState.language
-    in
+view sharedState _ =
     ( "Logout"
     , toElement (toContext sharedState) content
     )

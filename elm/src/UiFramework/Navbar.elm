@@ -1,6 +1,31 @@
-module UiFramework.Navbar exposing (..)
+module UiFramework.Navbar exposing (BackgroundColor(..), Context, Dropdown(..), DropdownMenuItem(..), DropdownOptions, LinkItemOptions, MenuItem(..), Navbar(..), NavbarOptions, NavbarState, UiElement, default, dropdown, dropdownMenuLinkItem, linkItem, onClick, view, viewCollapsedMenuList, viewDropdownItem, viewDropdownMenu, viewLinkItem, viewMenuItem, viewMenubarList, withBackground, withBackgroundColor, withBrand, withDropdownMenuIcon, withDropdownMenuItems, withDropdownMenuTitle, withExtraAttrs, withMenuIcon, withMenuItems, withMenuTitle)
 
-import Element exposing (..)
+import Element
+    exposing
+        ( Attribute
+        , Color
+        , Device
+        , DeviceClass(..)
+        , Element
+        , Orientation(..)
+        , alignLeft
+        , alignRight
+        , below
+        , column
+        , el
+        , fill
+        , height
+        , htmlAttribute
+        , none
+        , padding
+        , paddingXY
+        , pointer
+        , px
+        , row
+        , spacing
+        , text
+        , width
+        )
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -8,7 +33,7 @@ import Element.Region as Region
 import Html.Events
 import Json.Decode as Json
 import UiFramework.Colors as Colors
-import UiFramework.Configuration exposing (..)
+import UiFramework.Configuration exposing (ThemeConfig)
 import UiFramework.Icon as Icon
 import UiFramework.Internal as Internal
 import UiFramework.Types exposing (Role(..), Size(..))
@@ -186,17 +211,17 @@ withDropdownMenuIcon icon item =
             DropdownMenuLinkItem { options | icon = Just icon }
 
         DropdownMenuCustomItem ->
-            item  -- TODO impl for custome item
+            item
 
 
 withDropdownMenuTitle : String -> DropdownMenuItem context msg -> DropdownMenuItem context msg
-withDropdownMenuTitle title item  =
+withDropdownMenuTitle title item =
     case item of
         DropdownMenuLinkItem options ->
             DropdownMenuLinkItem { options | title = title }
 
         DropdownMenuCustomItem ->
-            item  -- TODO impl for custome item
+            item
 
 
 
@@ -234,9 +259,9 @@ view (Navbar options) =
 
                 brand attrs =
                     Internal.fromElement
-                        (\_ -> 
+                        (\_ ->
                             el attrs
-                            (options.brand |> Maybe.withDefault none)
+                                (options.brand |> Maybe.withDefault none)
                         )
 
                 navButton toggleMenuMsg =
@@ -279,13 +304,14 @@ view (Navbar options) =
 
                             else
                                 []
-                            )
+                           )
 
             else
                 Internal.uiRow headerAttrs [ brand [ alignLeft ], viewMenubarList options.items ]
         )
 
 
+collapseNavbar : Device -> Bool
 collapseNavbar device =
     case device.class of
         Phone ->
@@ -294,6 +320,7 @@ collapseNavbar device =
         Tablet ->
             if device.orientation == Portrait then
                 True
+
             else
                 False
 
@@ -311,7 +338,8 @@ viewCollapsedMenuList items =
                 , alignLeft
                 , Font.alignLeft
                 ]
-                <| List.map (viewMenuItem >> Internal.toElement context) items
+            <|
+                List.map (viewMenuItem >> Internal.toElement context) items
         )
 
 
@@ -324,7 +352,8 @@ viewMenubarList items =
                 , alignRight
                 , Font.center
                 ]
-                <| List.map (viewMenuItem >> Internal.toElement context) items
+            <|
+                List.map (viewMenuItem >> Internal.toElement context) items
         )
 
 
@@ -395,13 +424,14 @@ viewDropdownMenu items =
     Internal.fromElement
         (\context ->
             let
-                dropdownConfig = context.themeConfig.dropdownConfig
+                dropdownConfig =
+                    context.themeConfig.dropdownConfig
 
                 menuAlignment =
                     if collapseNavbar context.device then
                         alignLeft
-                    
-                    else 
+
+                    else
                         alignRight
             in
             el [ menuAlignment ] <|
@@ -421,9 +451,9 @@ viewDropdownMenu items =
                             case item of
                                 DropdownMenuLinkItem options ->
                                     Internal.toElement context <| viewLinkItem options
-                                
+
                                 DropdownMenuCustomItem ->
-                                    none -- TODO ?
+                                    none
                         )
                         items
                     )

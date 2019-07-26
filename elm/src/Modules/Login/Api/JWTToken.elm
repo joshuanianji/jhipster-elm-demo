@@ -1,4 +1,4 @@
-module Api.Data.JWTToken exposing (JWT, decoder, encoder)
+module Modules.Login.Api.JWTToken exposing (JWT, decoder, encoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)

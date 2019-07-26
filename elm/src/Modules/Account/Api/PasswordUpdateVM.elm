@@ -1,4 +1,4 @@
-module Api.Data.PasswordUpdateVM exposing (PasswordUpdateVM, decoder, encoder)
+module Modules.Account.Api.PasswordUpdateVM exposing (PasswordUpdateVM, decoder, encoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)

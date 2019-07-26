@@ -1,19 +1,18 @@
-module Modules.Home.Home exposing (Model, Msg(..), accountInfo, init, update, view)
+module Modules.Home.Home exposing (Model, Msg(..), init, update, view)
 
-import Api.Data.User exposing (User)
 import Browser.Navigation exposing (pushUrl)
-import Element exposing (..)
+import Element exposing (DeviceClass(..), Element, Orientation(..), alignTop, el, fill, fillPortion, height, link, paddingXY, spacing, text, width)
 import Element.Font as Font
 import Html
 import Html.Attributes
 import Modules.Home.I18n.Phrases as HomePhrases
 import Modules.Home.I18n.Translator exposing (translator)
+import Modules.Shared.Api.User exposing (User)
 import Routes exposing (Route(..), routeToUrlString)
 import SharedState exposing (SharedState, SharedStateUpdate(..))
 import UiFramework exposing (UiContextual, WithContext, flatMap, fromElement, toElement, uiColumn, uiParagraph, uiRow, uiText)
 import UiFramework.Alert as Alert
-import UiFramework.Colors as Colors
-import UiFramework.Types exposing (Role(..), ScreenSize(..))
+import UiFramework.Types exposing (Role(..))
 import UiFramework.Typography exposing (h1, textLead)
 
 
@@ -64,7 +63,7 @@ tt phrase =
 
 
 view : SharedState -> Model -> ( String, Element Msg )
-view sharedState model =
+view sharedState _ =
     ( "Welcome"
     , toElement (toContext sharedState) content
     )
@@ -72,74 +71,82 @@ view sharedState model =
 
 content : UiElement Msg
 content =
-    uiRow [ width fill, height fill ]
-        [ uiColumn
-            [ width <| fillPortion 3
-            , height fill
-            , paddingXY 20 10
-            , spacing 20
-            ]
-            [ h1 [ paddingXY 0 30 ] <| tt HomePhrases.Title
-            , textLead [] <| tt HomePhrases.Subtitle
-            , accountInfo
-            , uiParagraph
-                [ Font.alignLeft ]
-                [ tt HomePhrases.Like
-                , fromElement
-                    (\context ->
-                        link []
-                            { url = "https://github.com/jhipster/generator-jhipster"
-                            , label = text " Github!"
-                            }
-                    )
-                ]
-            ]
-        , uiColumn
-            [ width <| fillPortion 1
-            , alignTop
-            ]
-            [ fromElement
-                (\context ->
-                    el [ width fill, height fill ]
-                        (Html.img [ Html.Attributes.src "/images/jhipster_family_member_2.svg" ] []
-                            |> Element.html
-                        )
-                )
-            ]
-        ]
-
-
-accountInfo =
     flatMap
         (\context ->
-            case context.user of
-                Just user ->
-                    withUser user
+            let
+                homeInfo =
+                    [ h1 [ paddingXY 0 30 ] <| tt HomePhrases.Title
+                    , textLead [] <| tt HomePhrases.Subtitle
+                    , case context.user of
+                        Just user ->
+                            Alert.simple Success <|
+                                (tt <| HomePhrases.LoggedInAs user.username)
 
-                Nothing ->
-                    withoutUser
+                        Nothing ->
+                            Alert.simple Warning <|
+                                uiColumn
+                                    [ spacing 20 ]
+                                    [ uiParagraph
+                                        [ Font.alignLeft
+                                        ]
+                                        [ tt HomePhrases.SignInPrefix
+                                        , Alert.link
+                                            { onPress = Just <| NavigateTo Login
+                                            , label = tt HomePhrases.SignInLink
+                                            }
+                                        , tt HomePhrases.SignInSuffix
+                                        ]
+                                    , tt HomePhrases.AdminAccountInfo
+                                    , tt HomePhrases.UserAccountInfo
+                                    ]
+                    , uiParagraph
+                        [ Font.alignLeft ]
+                        [ tt HomePhrases.Like
+                        , fromElement
+                            (\_ ->
+                                link []
+                                    { url = "https://github.com/jiwhiz/jhipster-elm-demo"
+                                    , label = text " Github!"
+                                    }
+                            )
+                        ]
+                    ]
+
+                hipsterImg =
+                    fromElement
+                        (\_ ->
+                            el
+                                [ width fill
+                                , height fill
+                                ]
+                                (Html.img [ Html.Attributes.src "/images/jhipster_family_member_2.svg" ] []
+                                    |> Element.html
+                                )
+                        )
+            in
+            if context.device.class == Phone then
+                uiColumn
+                    [ width fill
+                    , height fill
+                    , paddingXY 5 10
+                    , spacing 20
+                    ]
+                    (homeInfo ++ [ hipsterImg ])
+
+            else
+                uiRow
+                    [ width fill, height fill ]
+                    [ uiColumn
+                        [ width <| fillPortion 3
+                        , height fill
+                        , paddingXY 20 30
+                        , spacing 20
+                        ]
+                        homeInfo
+                    , uiColumn
+                        [ width <| fillPortion 1
+                        , alignTop
+                        ]
+                        [ hipsterImg ]
+                    ]
         )
-
-
-withUser user =
-    Alert.simple Success <|
-        (tt <| HomePhrases.LoggedInAs user.username)
-
-
-withoutUser =
-    Alert.simple Warning <|
-        uiColumn
-            [ spacing 20 ]
-            [ uiParagraph
-                [ Font.alignLeft
-                ]
-                [ tt HomePhrases.SignInPrefix
-                , Alert.link
-                    { onPress = Just <| NavigateTo Login
-                    , label = tt HomePhrases.SignInLink
-                    }
-                , tt HomePhrases.SignInSuffix
-                ]
-            , tt HomePhrases.AdminAccountInfo
-            , tt HomePhrases.UserAccountInfo
-            ]

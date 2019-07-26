@@ -1,11 +1,11 @@
-module Api.Data.Settings exposing (Settings, decoder, encoder)
+module Modules.Account.Api.SettingsVM exposing (SettingsVM, decoder, encoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 
 
-type alias Settings =
+type alias SettingsVM =
     { username : String
     , firstName : String
     , lastName : String
@@ -14,9 +14,9 @@ type alias Settings =
     }
 
 
-decoder : Decoder Settings
+decoder : Decoder SettingsVM
 decoder =
-    Decode.succeed Settings
+    Decode.succeed SettingsVM
         |> required "login" Decode.string
         |> required "firstName" Decode.string
         |> required "lastName" Decode.string
@@ -24,7 +24,7 @@ decoder =
         |> required "langKey" Decode.string
 
 
-encoder : Settings -> Encode.Value
+encoder : SettingsVM -> Encode.Value
 encoder model =
     Encode.object
         [ ( "login", Encode.string model.username )

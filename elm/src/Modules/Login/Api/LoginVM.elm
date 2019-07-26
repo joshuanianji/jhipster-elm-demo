@@ -1,4 +1,4 @@
-module Api.Data.LoginVM exposing (LoginVM, decoder, encoder)
+module Modules.Login.Api.LoginVM exposing (LoginVM, decoder, encoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (optional)

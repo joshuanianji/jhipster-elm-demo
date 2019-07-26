@@ -11,6 +11,7 @@ type alias Translator phase =
     phase -> String
 
 
+supportLanguages : List Language
 supportLanguages =
     [ English
     , French
