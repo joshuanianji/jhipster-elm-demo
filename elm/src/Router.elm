@@ -1,29 +1,68 @@
-module Router exposing (DropdownMenuState(..), Model, Msg(..), Page(..), init, initWith, subscriptions, update)
+module Router exposing (Model, Msg(..), init, subscriptions, update, view)
 
+import Account.Activate as Activate
+import Account.PasswordResetFinish as PasswordResetFinish
+import Account.PasswordResetRequest as PasswordResetRequest
+import Account.PasswordUpdate as PasswordUpdate
+import Account.Register as Register
+import Account.Settings as Settings
+import Browser
 import Browser.Events as Events
 import Browser.Navigation
-import I18n
+import Element
+    exposing
+        ( DeviceClass(..)
+        , Element
+        , Orientation(..)
+        , alignBottom
+        , centerY
+        , column
+        , el
+        , fill
+        , height
+        , html
+        , image
+        , inFront
+        , padding
+        , paddingEach
+        , paddingXY
+        , paragraph
+        , px
+        , rgb255
+        , row
+        , text
+        , width
+        )
+import Element.Background as Background
+import Element.Font as Font
+import Error.NotFound as NotFound
+import FontAwesome.Brands
+import FontAwesome.Solid
+import FontAwesome.Styles
+import Home.Home as Home
+import Html
 import Json.Decode as Json
-import LocalStorage exposing (Event(..), jwtAuthenticationTokenKey)
-import Modules.Account.Activate as Activate
-import Modules.Account.PasswordResetFinish as PasswordResetFinish
-import Modules.Account.PasswordResetRequest as PasswordResetRequest
-import Modules.Account.PasswordUpdate as PasswordUpdate
-import Modules.Account.Register as Register
-import Modules.Account.Settings as Settings
-import Modules.Error.NotFound as NotFound
-import Modules.Home.Home as Home
-import Modules.Login.Login as Login
-import Modules.Login.Logout as Logout
-import Modules.Shared.Api.Request exposing (getCurrentAccount)
-import Modules.Shared.Api.User exposing (User)
+import LocalStorage exposing (Event(..))
+import Login.Login as Login
+import Login.Logout as Logout
 import RemoteData exposing (RemoteData(..), WebData)
 import Routes exposing (Route(..), fromUrl, routeToUrlString)
-import SharedState exposing (SharedState, SharedStateUpdate(..))
+import Shared.Api.Request exposing (getCurrentAccount)
+import Shared.Api.User exposing (User)
+import Shared.Constants exposing (jwtAuthenticationTokenKey)
+import Shared.I18n as I18n
+import Shared.I18n.Phrases as GlobalPhrases
+import Shared.I18n.Translator exposing (translator)
+import Shared.SharedState exposing (SharedState, SharedStateUpdate(..))
 import Task
+import Themes.Darkly exposing (darklyThemeConfig)
 import Toasty
 import Toasty.Defaults
-import UiFramework.Configuration exposing (ThemeConfig)
+import UiFramework exposing (toElement)
+import UiFramework.Colors as Colors
+import UiFramework.Configuration exposing (ThemeConfig, defaultThemeConfig)
+import UiFramework.Navbar as Navbar
+import UiFramework.Toasty
 import Url exposing (Url)
 import Utils
 
@@ -118,7 +157,7 @@ update sharedState msg model =
                     fromUrl location
 
                 ( newModel, newCmd, newSharedStateUpdate ) =
-                    navigateTo route model
+                    navigateTo sharedState route model
             in
             ( { newModel | route = route }
             , newCmd
@@ -309,8 +348,8 @@ updateWith toPage toMsg model ( subModel, subCmd, subSharedStateUpdate ) =
     )
 
 
-navigateTo : Route -> Model -> ( Model, Cmd Msg, SharedStateUpdate )
-navigateTo route model =
+navigateTo : SharedState -> Route -> Model -> ( Model, Cmd Msg, SharedStateUpdate )
+navigateTo sharedState route model =
     case route of
         Home ->
             Home.init |> initWith HomePage HomeMsg model NoUpdate
@@ -331,7 +370,15 @@ navigateTo route model =
             PasswordResetFinish.init key |> initWith PasswordResetFinishPage PasswordResetFinishMsg model NoUpdate
 
         Settings ->
-            Settings.init |> initWith SettingsPage SettingsMsg model NoUpdate
+            case sharedState.user of
+                Nothing ->
+                    ( { model | currentPage = NotFoundPage {} }
+                    , Cmd.none
+                    , NoUpdate
+                    )
+
+                Just user ->
+                    Settings.init user |> initWith SettingsPage SettingsMsg model NoUpdate
 
         PasswordUpdate ->
             PasswordUpdate.init |> initWith PasswordUpdatePage PasswordUpdateMsg model NoUpdate
@@ -352,3 +399,192 @@ initWith toPage toMsg model sharedStateUpdate ( subModel, subCmd ) =
     , Cmd.map toMsg subCmd
     , sharedStateUpdate
     )
+
+
+view : (Msg -> msg) -> SharedState -> Model -> Browser.Document msg
+view msgMapper sharedState model =
+    let
+        ( title, body ) =
+            case model.currentPage of
+                NotFoundPage pageModel ->
+                    NotFound.view sharedState pageModel |> transform NotFoundMsg
+
+                HomePage pageModel ->
+                    Home.view sharedState pageModel |> transform HomeMsg
+
+                LoginPage pageModel ->
+                    Login.view sharedState pageModel |> transform LoginMsg
+
+                LogoutPage pageModel ->
+                    Logout.view sharedState pageModel |> transform LogoutMsg
+
+                RegisterPage pageModel ->
+                    Register.view sharedState pageModel |> transform RegisterMsg
+
+                PasswordResetRequestPage pageModel ->
+                    PasswordResetRequest.view sharedState pageModel |> transform PasswordResetRequestMsg
+
+                PasswordResetFinishPage pageModel ->
+                    PasswordResetFinish.view sharedState pageModel |> transform PasswordResetFinishMsg
+
+                SettingsPage pageModel ->
+                    Settings.view sharedState pageModel |> transform SettingsMsg
+
+                PasswordUpdatePage pageModel ->
+                    PasswordUpdate.view sharedState pageModel |> transform PasswordUpdateMsg
+
+                ActivatePage pageModel ->
+                    Activate.view sharedState pageModel |> transform ActivateMsg
+
+        navbarState =
+            { toggleMenuState = model.toggleMenuState
+            , dropdownState = model.dropdownMenuState
+            }
+
+        pageLayout content =
+            Element.layout []
+                (column
+                    [ width fill
+                    , height fill
+                    , inFront <| UiFramework.Toasty.view ToastyMsg model.toasties
+                    ]
+                    [ FontAwesome.Styles.css |> html
+                    , header sharedState navbarState
+                    , el
+                        [ height fill
+                        , width fill
+                        , Background.color sharedState.themeConfig.bodyBackground
+                        , Font.color <| sharedState.themeConfig.fontColor sharedState.themeConfig.bodyBackground
+                        ]
+                        content
+                    , footer sharedState
+                    ]
+                )
+
+        transform toMsg =
+            Tuple.mapSecond (Element.map toMsg)
+                >> Tuple.mapSecond pageLayout
+    in
+    { title = "jHipster Elm Demo - " ++ title
+    , body = List.singleton (Html.map msgMapper body)
+    }
+
+
+header : SharedState -> Navbar.NavbarState DropdownMenuState -> Element Msg
+header sharedState navbarState =
+    let
+        context =
+            { device = sharedState.device
+            , themeConfig = sharedState.themeConfig
+            , parentRole = Nothing
+            , state = navbarState
+            }
+
+        translate =
+            translator sharedState.language
+
+        brand =
+            row []
+                [ image [ height (px 45) ] { src = "/logo-jhipster.png", description = "Logo" }
+                , row [ centerY ]
+                    [ el
+                        [ padding 0
+                        , alignBottom
+                        , Font.size 24
+                        , Font.bold
+                        ]
+                        (text "JelmHipster")
+                    , el
+                        [ paddingEach { top = 0, right = 0, bottom = 0, left = 10 }
+                        , alignBottom
+                        , Font.size 10
+                        ]
+                        (text "0.0.1-SNAPSHOT")
+                    ]
+                ]
+
+        homeMenuItem =
+            Navbar.linkItem (NavigateTo Home)
+                |> Navbar.withMenuIcon FontAwesome.Solid.home
+                |> Navbar.withMenuTitle (translate GlobalPhrases.MenuHome)
+
+        languageMenuItem =
+            Navbar.dropdown ToggleLanguageDropdown LanguageOpen
+                |> Navbar.withDropdownMenuItems
+                    [ Navbar.dropdownMenuLinkItem (SelectLanguage I18n.English)
+                        |> Navbar.withDropdownMenuTitle (I18n.languageName I18n.English)
+                    , Navbar.dropdownMenuLinkItem (SelectLanguage I18n.French)
+                        |> Navbar.withDropdownMenuTitle (I18n.languageName I18n.French)
+                    , Navbar.dropdownMenuLinkItem (SelectLanguage I18n.ChineseSimplified)
+                        |> Navbar.withDropdownMenuTitle (I18n.languageName I18n.ChineseSimplified)
+                    ]
+                |> Navbar.DropdownItem
+                |> Navbar.withMenuIcon FontAwesome.Solid.flag
+                |> Navbar.withMenuTitle (I18n.languageName sharedState.language)
+
+        themeMenuItem =
+            Navbar.dropdown ToggleThemeDropdown ThemeOpen
+                |> Navbar.withDropdownMenuItems
+                    [ Navbar.dropdownMenuLinkItem (SelectTheme defaultThemeConfig)
+                        |> Navbar.withDropdownMenuTitle (translate GlobalPhrases.MenuThemeBootstrap)
+                    , Navbar.dropdownMenuLinkItem (SelectTheme darklyThemeConfig)
+                        |> Navbar.withDropdownMenuTitle (translate GlobalPhrases.MenuThemeDarkly)
+                    ]
+                |> Navbar.DropdownItem
+                |> Navbar.withMenuIcon FontAwesome.Brands.bootstrap
+                |> Navbar.withMenuTitle (translate GlobalPhrases.MenuTheme)
+
+        accountMenuItem =
+            Navbar.dropdown ToggleAccountDropdown AccountOpen
+                |> Navbar.withDropdownMenuItems
+                    (case sharedState.user of
+                        Just _ ->
+                            [ Navbar.dropdownMenuLinkItem (NavigateTo Settings)
+                                |> Navbar.withDropdownMenuIcon FontAwesome.Solid.wrench
+                                |> Navbar.withDropdownMenuTitle (translate GlobalPhrases.MenuAccountSettings)
+                            , Navbar.dropdownMenuLinkItem (NavigateTo PasswordUpdate)
+                                |> Navbar.withDropdownMenuIcon FontAwesome.Solid.key
+                                |> Navbar.withDropdownMenuTitle (translate GlobalPhrases.MenuAccountPassword)
+                            , Navbar.dropdownMenuLinkItem (NavigateTo Logout)
+                                |> Navbar.withDropdownMenuIcon FontAwesome.Solid.signOutAlt
+                                |> Navbar.withDropdownMenuTitle (translate GlobalPhrases.MenuAccountLogout)
+                            ]
+
+                        Nothing ->
+                            [ Navbar.dropdownMenuLinkItem (NavigateTo Login)
+                                |> Navbar.withDropdownMenuIcon FontAwesome.Solid.signInAlt
+                                |> Navbar.withDropdownMenuTitle (translate GlobalPhrases.MenuAccountLogin)
+                            , Navbar.dropdownMenuLinkItem (NavigateTo Register)
+                                |> Navbar.withDropdownMenuIcon FontAwesome.Solid.cashRegister
+                                |> Navbar.withDropdownMenuTitle (translate GlobalPhrases.MenuAccountRegister)
+                            ]
+                    )
+                |> Navbar.DropdownItem
+                |> Navbar.withMenuIcon FontAwesome.Solid.user
+                |> Navbar.withMenuTitle (translate GlobalPhrases.MenuAccount)
+    in
+    Navbar.default ToggleMenu
+        |> Navbar.withBrand brand
+        |> Navbar.withBackgroundColor (Colors.getColor "#353d47")
+        |> Navbar.withMenuItems
+            [ homeMenuItem
+            , languageMenuItem
+            , themeMenuItem
+            , accountMenuItem
+            ]
+        |> Navbar.view
+        |> toElement context
+
+
+footer : SharedState -> Element Msg
+footer sharedState =
+    let
+        translate =
+            translator sharedState.language
+    in
+    paragraph
+        [ paddingXY 20 10
+        , Background.color (rgb255 248 248 248)
+        , Font.size 10
+        ]
+        [ text <| translate GlobalPhrases.Footer ]

@@ -1,4 +1,4 @@
-port module LocalStorage exposing (Event(..), clear, jwtAuthenticationTokenKey, request, save, watchChanges)
+port module LocalStorage exposing (Event(..), clear, request, save, watchChanges)
 
 {-| This module provides a basic interface to the localStorage API. It supports
 requesting, saving, and clearing values for specific keys. It also provides a
@@ -21,14 +21,6 @@ state be updated. This serves two purposes:
 
 import Json.Decode as Decode exposing (Decoder, decodeValue)
 import Json.Encode as Encode exposing (Value)
-
-
-
----- CONSTANTS ----
-
-jwtAuthenticationTokenKey : String
-jwtAuthenticationTokenKey =
-    "jhi-authenticationToken"
 
 
 

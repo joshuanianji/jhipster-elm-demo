@@ -5,15 +5,15 @@ import Browser.Events
 import Browser.Navigation
 import Element exposing (Device, classifyDevice)
 import Html
-import I18n exposing (Language(..), languageFromCode)
 import Json.Decode as Decode
-import LocalStorage exposing (Event(..), jwtAuthenticationTokenKey)
-import Modules.Shared.Api.Request exposing (getCurrentAccount)
-import Modules.Shared.Api.User exposing (User)
+import LocalStorage exposing (Event(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Router
-import RouterView
-import SharedState exposing (SharedState, SharedStateUpdate(..))
+import Shared.Api.Request exposing (getCurrentAccount)
+import Shared.Api.User exposing (User)
+import Shared.Constants exposing (jwtAuthenticationTokenKey)
+import Shared.I18n exposing (Language(..), languageFromCode)
+import Shared.SharedState as SharedState exposing (SharedState, SharedStateUpdate(..))
 import Task
 import Time exposing (Posix, Zone)
 import UiFramework.Configuration exposing (defaultThemeConfig)
@@ -337,7 +337,7 @@ view : Model -> Browser.Document Msg
 view model =
     case model.appState of
         Ready sharedState routerModel ->
-            RouterView.view RouterMsg sharedState routerModel
+            Router.view RouterMsg sharedState routerModel
 
         NotReady _ _ _ ->
             { title = "jHipster Elm Demo - Loading"
