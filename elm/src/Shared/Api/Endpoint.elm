@@ -8,6 +8,7 @@ module Shared.Api.Endpoint exposing
     , resetPassword
     , resetPasswordRequest
     , unwrap
+    , users
     )
 
 import Url.Builder exposing (QueryParameter)
@@ -70,3 +71,8 @@ resetPassword =
 changePassword : Endpoint
 changePassword =
     url [ "account", "change-password" ] []
+
+
+users : Endpoint
+users =
+    url [ "users" ] []

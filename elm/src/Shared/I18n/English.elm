@@ -19,7 +19,7 @@ translate phrase =
             "Darkly"
 
         MenuAdmin ->
-            "Admin"
+            "Administration"
 
         MenuAdminUserMgt ->
             "User Management"

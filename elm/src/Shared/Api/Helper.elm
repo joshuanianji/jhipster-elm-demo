@@ -3,6 +3,7 @@ module Shared.Api.Helper exposing
     , deleteExpectNothing
     , get
     , getExpectNothing
+    , getPageableData
     , patch
     , patchExpectNothing
     , post
@@ -12,9 +13,10 @@ module Shared.Api.Helper exposing
     , putExpectNothing
     )
 
+import Dict
 import File exposing (File)
 import Http
-import Json.Decode exposing (Decoder)
+import Json.Decode as Decode exposing (Decoder)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -36,6 +38,57 @@ get jwtToken url msg decoder =
         , url = url
         , body = Http.emptyBody
         , expect = Http.expectJson (RemoteData.fromResult >> msg) decoder
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+getPageableData : Maybe String -> String -> (WebData { total : Int, list : List a } -> msg) -> Decoder a -> Cmd msg
+getPageableData jwtToken url msg decoder =
+    Http.request
+        { method = "GET"
+        , headers = authHeader jwtToken
+        , url = url
+        , body = Http.emptyBody
+        , expect =
+            Http.expectStringResponse (RemoteData.fromResult >> msg) <|
+                \response ->
+                    case response of
+                        Http.BadUrl_ url_ ->
+                            Err (Http.BadUrl url_)
+
+                        Http.Timeout_ ->
+                            Err Http.Timeout
+
+                        Http.NetworkError_ ->
+                            Err Http.NetworkError
+
+                        Http.BadStatus_ metadata body ->
+                            Err (Http.BadStatus metadata.statusCode)
+
+                        Http.GoodStatus_ metadata body ->
+                            let
+                                totalItemCount =
+                                    metadata.headers
+                                        |> Dict.get "x-total-count"
+                                        |> Maybe.andThen
+                                            (\countStr ->
+                                                countStr
+                                                    |> Decode.decodeString Decode.int
+                                                    |> Result.withDefault 10
+                                                    |> Just
+                                            )
+                                        |> Maybe.withDefault 10
+
+                                itemList =
+                                    Decode.decodeString (Decode.list decoder) body
+                            in
+                            case itemList of
+                                Ok list ->
+                                    Ok { total = totalItemCount, list = list }
+
+                                Err error ->
+                                    Err (Http.BadBody (Decode.errorToString error))
         , timeout = Nothing
         , tracker = Nothing
         }

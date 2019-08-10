@@ -15,6 +15,7 @@ type Route
     | Settings
     | PasswordUpdate
     | Activate (Maybe String)
+    | UserList
     | NotFound
 
 
@@ -36,6 +37,7 @@ routeParser =
         , map Settings (s "account" </> s "settings")
         , map PasswordUpdate (s "account" </> s "password")
         , map Activate (s "activate" </> query (Query.string "key"))
+        , map UserList (s "admin" </> s "user-management")
         ]
 
 
@@ -76,6 +78,9 @@ routeToUrlString route =
 
                 Activate _ ->
                     [ "activate" ]
+
+                UserList ->
+                    [ "admin", "user-management" ]
 
                 NotFound ->
                     []
